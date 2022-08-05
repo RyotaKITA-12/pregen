@@ -1,0 +1,12 @@
+version: "3"
+services:
+  client:
+    build:
+      context: .
+      dockerfile: ./docker/client/Dockerfile
+    volumes:
+      - ./client:/client
+    command: sh -c "PORT=3000 yarn start"
+    ports:
+      - 3000:3000
+    stdin_open: true
