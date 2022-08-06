@@ -13,7 +13,6 @@ function App() {
         [name]: files[0],
       });
       event.target.value = '';
-      console.log(postFileData)
     };
 
   return (
@@ -24,7 +23,7 @@ function App() {
           あなたのパワーポイントをアップロードしていただくと、<br></br>
           それに合ったスライドをお作りします。
         </p>
-        <SendButton onChange={changeUploadFile} name="image">GO!</SendButton>
+        <SendButton onChange={changeUploadFile} name="pptx">GO!</SendButton>
       </header>
     </div>
   );

@@ -4,7 +4,7 @@ export const SendButton = (props:any) => {
     return(
         <label htmlFor={`upload-button-${props.name}`}>
         <input style = {{display:"none"}}
-        accept="image/*"
+        accept=".pptx"
         id={`upload-button-${props.name}`}
         name={props.name}
         multiple
