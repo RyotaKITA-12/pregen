@@ -6,6 +6,19 @@ import termextract.core
 from janome.tokenizer import Tokenizer
 import collections
 from janome.tokenizer import Tokenizer 
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+import urllib.request
+import os.path
+import glob
+from sklearn import model_selection
+import joblib
+import zipfile
+
+#必要に応じて
+#!pip install mecab-python3
+#!pip install unidic-lite
+import MeCab
 
 #関数
 
@@ -22,22 +35,22 @@ def sub(text):
     
     return text
 
-#pptx(frame)の中身をテキスト抽出(sample.txtとして出力)
+####pptx(fname)の中身をテキスト抽出(sample.txtとして出力)
 #形態素解析用に文ごとの配列を返す
-def pptx_text(frame):
+def pptx_text(fname):
     f = open('sample.txt', 'w')
-    #frame='sampleFile.pptx'
+    #fname='sampleFile.pptx'
     txt = []
     prs = pptx.Presentation(fname)
 
     for i, sld in enumerate(prs.slides, start=1):
 
-        print(f'-- Page {i} --')
+        #print(f'-- Page {i} --')
 
         for shp in sld.shapes:
 
             if shp.has_text_frame:
-                print (shp.text)
+                #print (shp.text)
                 shp.text = sub(shp.text)
                 txt.append(shp.text)
                 f.write(shp.text)
@@ -57,7 +70,7 @@ def pptx_text(frame):
                             text+=', '
                     print (text)
                     f.write(text)
-            print ()
+            #print ()
     f.close()
     sentences = [s for s in txt if s != ' ']
     sentences = [s for s in sentences if s != '']
@@ -72,7 +85,7 @@ def keyword():
     f = open(file_path, "r", encoding="utf-8")
     text = f.read()
     f.close
-    
+    words=[]
     # 形態素解析器で日本語処理
     t = Tokenizer()
     tokenize_text = t.tokenize(text)
@@ -116,11 +129,51 @@ def morpheme(sentences):
         words.append(word)
     return words
 
-def main():
+#TF-IDF分析に使う
+def extract(text):
+    words = []
+    # Taggerオブジェクトを生成
+    tokenizer = MeCab.Tagger("")
+    tokenizer.parse("")
+    # 単語の特徴リストを生成
+    node = tokenizer.parseToNode(text)
 
+    while node:
+        # 品詞情報(node.feature)が名詞か形容詞ならば
+        if node.feature.split(",")[0] == u"名詞" or node.feature.split(",")[0] == u"形容詞":
+            # 単語(node.surface)をwordsに追加
+            words.append(node.surface)
+        node = node.next
+
+    # 半角スペース区切りで文字列を結合
+    text_result = ' '.join(words)
+    return text_result
+
+#TF-IDF分析(上位10単語を返す)
+def tf_idf(): #filename...モデルの保存ファイルが含まれるzipファイル
+    for filename in glob.glob('*.zip'):
+        #zipファイル解凍
+        zip_f = zipfile.ZipFile(filename)
+        zip_f.extractall('./data')
+        zip_f.close()
+    # データフレームに表現
+    X =joblib.load('./data/X.sav')
+    # データフレームに表現
+    values = X.toarray()
+    feature_names = joblib.load('./data/finalized_model.sav')
+    #feature_names = vectorizer.get_feature_names()
+    df = pd.DataFrame(values, columns = feature_names,
+                    index=["サンプル","心理学", "情報科学", "経済","社会学","医学","化学","数学","生物"])
+    # 行列を転置
+    df_0 = df[0:1].T
+    # 値で降順ソート
+    df_0 = df_0.sort_values(by="サンプル", ascending=False)
+    return list(df_0.head(10).index)
 
 if __name__ == '__main__':
     sentences = pptx_text('../pptx/data/test.pptx') #形態素解析に使用する配列
     key_words = keyword() #重要な順に単語を格納した配列
-    words = morpheme(sentences)
+    words = morpheme(sentences)#形容詞と名詞を格納した配列
+    df = tf_idf() #TF-IDF分析　上位10単語のリストを返す
+    print(df)
     
