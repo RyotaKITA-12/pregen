@@ -1,3 +1,5 @@
+import gensim
+import MeCab
 import pandas as pd
 
 
@@ -27,11 +29,39 @@ def get_color_images(colors, impressions, indexes, names):
     return result_colors
 
 
+def extract_origin(word):
+    m = MeCab.Tagger('-Ochasen')
+    node = m.parseToNode(word)
+    while node:
+        origin = node.feature.split(",")[6]
+        if origin == "*":
+            node = node.next
+        else:
+            return origin
+
+
+def create_similar(word):
+    word_origin = extract_origin(word)
+    impressions = list(dict.fromkeys(list(color_patterns['name'])))
+    similar_dict = {}
+    for impression in impressions:
+        impression_origin = extract_origin(impression)
+        try:
+            similar_dict[impression] = model.wv.similarity(word_origin,
+                                                           impression_origin)
+        except KeyError:
+            pass
+    return sorted(similar_dict.items(), key=lambda x: x[1], reverse=True)
+
+
 if __name__ == '__main__':
     colors = pd.read_csv('./data/color.csv')
     color_patterns = pd.read_csv('./data/color_img_scale.csv')
     color_patterns.rename(
         columns={'Unnamed: 0': 'name'},
         inplace=True)
-    impression = '人工的な'
-    print(choice_color_direct(impression, color_patterns, colors))
+    model = gensim.models.Word2Vec.load('./model/word2vec.gensim.model')
+    word = input("word :")
+    sim_dic = create_similar(word)
+    print(sim_dic[0])
+    print(choice_color_direct(sim_dic[0][0], color_patterns, colors))

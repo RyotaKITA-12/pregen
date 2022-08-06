@@ -1,7 +1,11 @@
 uvicorn
+
 fastapi
 Jinja2
+
 databases[postgresql]
 SQLAlchemy
 alembic
 psycopg2
+
+python-pptx
