@@ -6,7 +6,9 @@ services:
       dockerfile: ./docker/client/Dockerfile
     volumes:
       - ./client:/client
-    command: sh -c "PORT=3000 yarn start"
+    command: sh -c "yarn && yarn start"
+    environment:
+      - PORT=3000
     ports:
       - 3000:3000
     stdin_open: true
