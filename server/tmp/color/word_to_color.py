@@ -64,4 +64,6 @@ if __name__ == '__main__':
     word = input("word :")
     sim_dic = create_similar(word)
     print(sim_dic[0])
-    print(choice_color_direct(sim_dic[0][0], color_patterns, colors))
+    print(choice_color_direct(sim_dic[0][0], color_patterns, colors)[0][0])
+    print(choice_color_direct(sim_dic[0][0], color_patterns, colors)[0][1])
+    print(choice_color_direct(sim_dic[0][0], color_patterns, colors)[0][2])
