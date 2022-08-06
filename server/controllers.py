@@ -1,24 +1,7 @@
-import db
-from models import User
-
+from sys import prefix
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.requests import Request
+from router.files import router as filesRouter
 
-app = FastAPI(title='pregen')
-app.mount(
-    '/server/views',
-    StaticFiles(directory="/server/views"),
-    name='static'
-)
-templates = Jinja2Templates(directory="views/templates")
-jinja_env = templates.env
+app = FastAPI(title='pregen', prefix='/api')
 
-
-def test(request: Request):
-    user = db.session.query(User).filter(User.username == 'admin').first()
-    db.session.close()
-    return templates.TemplateResponse('test.html',
-                                      {'request': request,
-                                       'user': user})
+app.include_router(filesRouter)
