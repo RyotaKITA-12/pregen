@@ -1,10 +1,11 @@
-
 import os
 import shutil
 from typing import BinaryIO
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from config import upload_dir
+
+import app
 
 
 router = APIRouter(prefix='/files')
