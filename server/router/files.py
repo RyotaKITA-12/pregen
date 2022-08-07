@@ -1,10 +1,11 @@
-
 import os
 import shutil
 from typing import BinaryIO
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from config import upload_dir
+
+import app
 
 
 router = APIRouter(prefix='/files')
@@ -16,6 +17,7 @@ async def upload_pptx(file: UploadFile):
     if not extension:
         raise HTTPException(status_code=400, detail="invalid file format")
     save_file(file=file.file, filename=file.filename)
+    app.main()
     return {
         'message': 'successfully saved the file',
         'filename': file.filename
