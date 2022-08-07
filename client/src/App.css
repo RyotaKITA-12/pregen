@@ -7,6 +7,11 @@
   pointer-events: none;
 }
 
+.logo{
+  heigh:160px;
+  width:280px;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
@@ -20,10 +25,14 @@
   align-items: center;
   justify-content: cent#87cefaer;
   font-size: calc(10px + 2vmin);
-  margint-top:100px;
+  margin-top:100px;
 }
 
-.
+.Bottun{
+  margin-top:100px;
+  display:flex;
+  overflow:hidden;
+}
 
 .App-link {
   color: #61dafb;
