@@ -170,6 +170,7 @@ def tf_idf(): #filename...モデルの保存ファイルが含まれるzipファ
     return list(df_0.head(10).index)
 
 if __name__ == '__main__':
+    #一時的にtest.pptxにしてるので必要に応じて変更
     sentences = pptx_text('../pptx/data/test.pptx') #形態素解析に使用する配列 TF-IDF分析をするときにも必要なファイルを作るので必須
     key_words = keyword() #重要な順に単語を格納した配列
     words = morpheme(sentences)#形容詞と名詞を格納した配列
