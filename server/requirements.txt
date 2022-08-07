@@ -9,3 +9,9 @@ alembic
 psycopg2
 python-pptx
 python-multipart
+
+mecab-python3
+gensim
+pandas
+scikit-learn
+janome
