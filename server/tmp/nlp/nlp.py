@@ -5,7 +5,6 @@ import termextract.janome
 import termextract.core
 from janome.tokenizer import Tokenizer
 import collections
-from janome.tokenizer import Tokenizer 
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import urllib.request
@@ -171,9 +170,9 @@ def tf_idf(): #filename...モデルの保存ファイルが含まれるzipファ
     return list(df_0.head(10).index)
 
 if __name__ == '__main__':
-    sentences = pptx_text('../pptx/data/test.pptx') #形態素解析に使用する配列
+    sentences = pptx_text('../pptx/data/test.pptx') #形態素解析に使用する配列 TF-IDF分析をするときにも必要なファイルを作るので必須
     key_words = keyword() #重要な順に単語を格納した配列
     words = morpheme(sentences)#形容詞と名詞を格納した配列
     df = tf_idf() #TF-IDF分析　上位10単語のリストを返す
-    print(df)
+    #print(df)
     
