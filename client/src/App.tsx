@@ -80,6 +80,7 @@ function App() {
             送信
           </Button>
           <div>{filename}</div>
+          <img src={logo1} alt="picture" />
         </div>
       </header>
     </div>
