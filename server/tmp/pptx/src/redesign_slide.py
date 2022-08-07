@@ -1,5 +1,6 @@
 import colorsys
 import csv
+import os
 import subprocess
 
 import gensim
@@ -262,28 +263,154 @@ def create_similar(word):
     return sorted(similar_dict.items(), key=lambda x: x[1], reverse=True)
 
 
+def pptx_text(fname):
+    f = open('sample.txt', 'w')
+    # fname='sampleFile.pptx'
+    txt = []
+    prs = pptx.Presentation(fname)
+
+    for i, sld in enumerate(prs.slides, start=1):
+
+        for shp in sld.shapes:
+
+            if shp.has_text_frame:
+                shp.text = sub(shp.text)
+                txt.append(shp.text)
+                f.write(shp.text)
+
+            if shp.has_table:
+                tbl = shp.table
+                row_count = len(tbl.rows)
+                col_count = len(tbl.columns)
+                for r in range(0, row_count):
+                    text = ''
+                    for c in range(0, col_count):
+                        cell = tbl.cell(r, c)
+                        paragraphs = cell.text_frame.paragraphs
+                        for paragraph in paragraphs:
+                            for run in paragraph.runs:
+                                text += run.text
+                            text += ', '
+                    print(text)
+                    f.write(text)
+    f.close()
+    sentences = [s for s in txt if s != ' ']
+    sentences = [s for s in sentences if s != '']
+    return sentences
+
+
+def keyword():
+    # ファイルパス
+    file_path = "sample.txt"
+
+    # 日本語テキストの読み込み
+    f = open(file_path, "r", encoding="utf-8")
+    text = f.read()
+    f.close
+    words = []
+    # 形態素解析器で日本語処理
+    t = Tokenizer()
+    tokenize_text = t.tokenize(text)
+
+    # Frequency生成＝複合語抽出処理（ディクショナリとリストの両方可)
+    frequency = termextract.janome.cmp_noun_dict(tokenize_text)
+
+    # FrequencyからLRを生成する
+    lr = termextract.core.score_lr(
+        frequency,
+        ignore_words=termextract.mecab.IGNORE_WORDS,
+        lr_mode=1, average_rate=1)
+
+    # FrequencyとLRを組み合わせFLRの重要度を出す
+    term_imp = termextract.core.term_importance(frequency, lr)
+
+    # collectionsを使って重要度が高い順に表示
+    data_collection = collections.Counter(term_imp)
+    for cmp_noun, value in data_collection.most_common():
+        words.append(termextract.core.modify_agglutinative_lang(cmp_noun))
+    return words
+
+
+def morpheme(sentences):
+    # Tokenizerインスタンスの生成
+    t = Tokenizer()
+    # print(text)
+    # テキストを引数として、形態素解析の結果、名詞・形容詞(原形)のみを配列で抽出する関数を定義
+
+    def extract_words(text):
+        tokens = t.tokenize(text)
+        return [token.base_form for token in tokens
+                if token.part_of_speech.split(',')[0] in ['名詞', '形容詞']]
+
+    # それぞれの文章を単語リストに変換
+    word_list = [extract_words(s) for s in sentences]
+    words = []
+    for word in word_list:
+        # print(word)
+        words.append(word)
+    return words
+
+
+def tf_idf():  # filename...モデルの保存ファイルが含まれるzipファイル
+    for filename in glob.glob('*.zip'):
+        # zipファイル解凍
+        zip_f = zipfile.ZipFile(filename)
+        zip_f.extractall('./data')
+        zip_f.close()
+    # データフレームに表現
+    X = joblib.load('./data/X.sav')
+    # データフレームに表現
+    values = X.toarray()
+    feature_names = joblib.load('./data/finalized_model.sav')
+    df = pd.DataFrame(values, columns=feature_names,
+                      index=["サンプル", "心理学", "情報科学", "経済", "社会学", "医学", "化学", "数学", "生物"])
+    # 行列を転置
+    df_0 = df[0:1].T
+    # 値で降順ソート
+    df_0 = df_0.sort_values(by="サンプル", ascending=False)
+    return list(df_0.head(10).index)
+
+
 if __name__ == '__main__':
+    filepath = '../data/test_001.pptx'
+    filename = os.path.splitext(os.path.basename(filepath))[0]
+    sentences = pptx_text(filepath)
+    keywords = keyword()
+    words = morpheme(sentences)
+    df = tf_idf()
+    model = gensim.models.Word2Vec.load('../model/word2vec.gensim.model')
+    # df = ["猫", "自然", "二十歳", "大学", "ベッド"]
+
+    icons = {}
+    with open('../data/icon.csv', mode='r') as file:
+        reader = csv.reader(file)
+        icons = {rows[1]: rows[0] for rows in reader}
+    similar_icon_dict = {}
+    similar_word_dict = {}
+    for word in df:
+        for icon in icons:
+            try:
+                # print(icon, model.wv.similarity(word, icon))
+                similar_icon_dict[icon] = model.wv.similarity(word, icon)
+            except KeyError:
+                pass
+        similar_word_dict[word] = sorted(similar_icon_dict.items(),
+                                         key=lambda x: x[1], reverse=True)[0][1]
+    word = list(similar_word_dict)[0][0]
+    for icon in icons:
+        try:
+            print(icon, model.wv.similarity(word, icon))
+            similar_icon_dict[icon] = model.wv.similarity(word, icon)
+        except KeyError:
+            pass
+    logo = icons[sorted(similar_icon_dict.items(),
+                        key=lambda x: x[1], reverse=True)[0][0]]
+
     colors = pd.read_csv('../data/color.csv')
     color_patterns = pd.read_csv('../data/color_img_scale.csv')
     color_patterns.rename(
         columns={'Unnamed: 0': 'name'},
         inplace=True)
-    model = gensim.models.Word2Vec.load('../model/word2vec.gensim.model')
-    word = input("word :")
     sim_dic = create_similar(word)
     colors = choice_color_direct(sim_dic[0][0], color_patterns, colors)
-    filename = input("filename :")
-    icons = {}
-    with open('../data/icon.csv', mode='r') as file:
-        reader = csv.reader(file)
-        icons = {rows[1]: rows[0] for rows in reader}
-    similar_dict = {}
-    for icon in icons:
-        try:
-            similar_dict[icon] = model.wv.similarity(word, icon)
-        except KeyError:
-            pass
-    logo = icons[sorted(similar_dict.items(),
-                        key=lambda x: x[1], reverse=True)[0][0]]
-    print(logo)
     main(filename, colors, logo)
