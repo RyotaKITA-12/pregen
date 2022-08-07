@@ -17,11 +17,10 @@ async def upload_pptx(file: UploadFile):
     if not extension:
         raise HTTPException(status_code=400, detail="invalid file format")
     save_file(file=file.file, filename=file.filename)
-    app.main()
-    return {
-        'message': 'successfully saved the file',
-        'filename': file.filename
-    }
+    return FileResponse(
+        path=os.path.join(upload_dir, file.filename),
+        filename=file.filename
+    )
 
 
 @router.get("{filename:path}")
