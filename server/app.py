@@ -22,10 +22,10 @@ import termextract.core
 
 def main(in_path, out_path):
     filename = os.path.splitext(os.path.basename(in_path))[0]
-    # sentences = pptx_text(in_path)
-    # keywords = keyword()
-    # words = morpheme(sentences)
-    # df = tf_idf()
+    sentences = pptx_text(in_path)
+    keywords = keyword()
+    words = morpheme(sentences)
+    df = tf_idf()
     model = gensim.models.Word2Vec.load('./model/word2vec.gensim.model')
     df = ["猫", "自然", "二十歳", "大学", "ベッド"]
 
