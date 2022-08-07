@@ -4,6 +4,7 @@ import csv
 import glob
 import joblib
 import os
+import re
 import subprocess
 import zipfile
 
@@ -22,12 +23,12 @@ import termextract.core
 
 def main(in_path, out_path):
     filename = os.path.splitext(os.path.basename(in_path))[0]
-    # sentences = pptx_text(in_path)
-    # keywords = keyword()
-    # words = morpheme(sentences)
-    # df = tf_idf()
+    sentences = pptx_text(in_path)
+    keywords = keyword()
+    words = morpheme(sentences)
+    df = tf_idf()
     model = gensim.models.Word2Vec.load('./model/word2vec.gensim.model')
-    df = ["猫", "自然", "二十歳", "大学", "ベッド"]
+    # df = ["猫", "自然", "二十歳", "大学", "ベッド"]
 
     icons = {}
     with open('./data/icon.csv', mode='r') as file:
@@ -53,14 +54,14 @@ def main(in_path, out_path):
     logo = icons[sorted(similar_icon_dict.items(),
                         key=lambda x: x[1], reverse=True)[0][0]]
 
-    colors = pd.read_csv('../data/color.csv')
-    color_patterns = pd.read_csv('../data/color_img_scale.csv')
+    colors = pd.read_csv('./data/color.csv')
+    color_patterns = pd.read_csv('./data/color_img_scale.csv')
     color_patterns.rename(
         columns={'Unnamed: 0': 'name'},
         inplace=True)
     sim_dic = create_similar(word)
     colors = choice_color_direct(sim_dic[0][0], color_patterns, colors)
-    path = '../data/'+filename+'.pptx'
+    path = './data/'+filename+'.pptx'
     corrected_colors = correct_color(colors)
 
     read_ppt = pptx.Presentation(path)
@@ -130,7 +131,7 @@ def extract_items(path, slide):
 
 
 def overwrite_points(logo, colors, title, conclude, points, filename, out_path):
-    ppt = pptx.Presentation('../templates/points.pptx')
+    ppt = pptx.Presentation('./templates/points.pptx')
     slide = ppt.slides[0]
     slide.shapes[0].fill.solid()
     slide.shapes[0].fill.fore_color.rgb = RGBColor(*colors[0])
@@ -168,17 +169,17 @@ def overwrite_points(logo, colors, title, conclude, points, filename, out_path):
     convert_pptx_to_zip(filename)
 
     slide.shapes.add_picture(
-        '../data/unzipped/ppt/media/image1.png', Cm(4), Cm(8), Cm(9))
+        './data/unzipped/ppt/media/image1.png', Cm(4), Cm(8), Cm(9))
 
     slide.shapes.add_picture(
-        '../data/img/'+logo, Cm(0.5), Cm(0.5), Cm(2))
+        './data/img/'+logo, Cm(0.5), Cm(0.5), Cm(2))
 
     ppt.save(out_path)
 
 
 def overwrite_title(logo, colors, title, subtitle, affiliation, name, date,
                     filename, out_path):
-    ppt = pptx.Presentation('../templates/title.pptx')
+    ppt = pptx.Presentation('./templates/title.pptx')
     slide = ppt.slides[0]
     hsv_1 = list(colorsys.rgb_to_hsv(*colors[0]))
     hsv_2 = list(colorsys.rgb_to_hsv(*colors[1]))
@@ -237,14 +238,14 @@ def correct_color(colors):
 
 def convert_pptx_to_zip(filename):
     try:
-        _ = subprocess.run(["rm", "-r", "-f", "../data/unzipped"])
+        _ = subprocess.run(["rm", "-r", "-f", "./data/unzipped"])
     except FileNotFoundError:
         pass
-    _ = subprocess.run(["mkdir", "../data/unzipped"])
+    _ = subprocess.run(["mkdir", "./data/unzipped"])
     _ = subprocess.run(
-        ["cp", "../data/"+filename+".pptx", "../data/"+filename+".zip"])
+        ["cp", "./data/"+filename+".pptx", "./data/"+filename+".zip"])
     _ = subprocess.run(
-        ["unzip", "../data/"+filename+".zip", "-d", "../data/unzipped/"])
+        ["unzip", "./data/"+filename+".zip", "-d", "./data/unzipped/"])
 
 
 def parsing_dependencies(conclude):
@@ -321,7 +322,7 @@ def pptx_text(fname):
         for shp in sld.shapes:
 
             if shp.has_text_frame:
-                shp.text = sub(shp.text)
+                shp.text = re.sub(shp.text)
                 txt.append(shp.text)
                 f.write(shp.text)
 
