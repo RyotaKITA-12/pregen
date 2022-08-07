@@ -16,9 +16,8 @@ RUN wget http://gensen.dl.itc.u-tokyo.ac.jp/soft/pytermextract-0_02.zip \
     && cd /pytermextract \
     && python setup.py install
 
-# RUN pip install --no-cache-dir --upgrade -r /server/requirements.txt
-# RUN pip install --no-cache-dir gensim
-RUN pip install mecab-python3 pandas scikit-learn janome
+RUN pip install --no-cache-dir --upgrade -r /server/requirements.txt
+
 COPY . .
 
 CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8080"]
